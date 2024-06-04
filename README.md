@@ -1,7 +1,7 @@
 # Tetrahedron Splatting for 3D Generation
-### [[Paper]](https://github.com/fudan-zvg/tet-splatting) 
+### [[Paper]](https://arxiv.org/abs/2406.01579) 
 
-> [**Tetrahedron Splatting for 3D Generation**](https://github.com/fudan-zvg/tet-splatting),            
+> [**Tetrahedron Splatting for 3D Generation**](https://arxiv.org/abs/2406.01579),            
 > [Chun Gu](https://sulvxiangxin.github.io/), Zeyu Yang, Zijie Pan, [Xiatian Zhu](https://surrey-uplab.github.io/), [Li Zhang](https://lzrobots.github.io)  
 > **Arxiv preprint**
 
