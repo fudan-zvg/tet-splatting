@@ -16,10 +16,10 @@
 
 ## 📜 BibTeX
 ```bibtex
-@article{xxx,
+@article{gu2024tetrahedron,
   title={Tetrahedron Splatting for 3D Generation},
   author={Gu, Chun and Yang, Zeyu and Pan, Zijie and Zhu, Xiatian and Zhang, Li},
-  journal={xxx},
+  journal={2406.01579},
   year={2024},
 }
 ```
