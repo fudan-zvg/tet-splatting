@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TeT-Splatting</title>
+    <!-- Bootstrap -->
+    <link href="css/bootstrap-4.4.1.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/dics.min.css">
+<!--    <link href="https://db.onlinewebfonts.com/c/d02befc8fdd8e5315fb21fa7f38fd55a?family=Shree+Devanagari+714" rel="stylesheet">-->
+    <!-- <link rel="stylesheet" href="css/bulma.min.css"> -->
+    <script src="scripts/dics.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', domReady);
+        function domReady() {
+            for (const e of document.querySelectorAll(".b-dics")) {
+                new Dics({
+                    container: e,
+                    textPosition: "top"
+                });
+            }
+        }
+    </script>
+</head>
+
+<body>
+
+    <section>
+        <div class="text-center mt-4">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <h1>Tetrahedron Splatting for 3D Generation</h1>
+                        <hr>
+                        <h5> <a href="https://sulvxiangxin.github.io/" target="_blank">Chun Gu<sup>1</sup></a>,
+                            Zeyu Yang<sup>1</sup>,
+                            Zijie Pan<sup>1</sup>,
+                            <a href="https://xiatian-zhu.github.io/" target="_blank">Xiatian Zhu<sup>2</sup></a>,
+                            <a href="https://lzrobots.github.io/" target="_blank">Li Zhang<sup>1<i class="fa fa-envelope"> </i></sup></a> </h5>
+                        <h5 style="color:#000000;"><sup>1 </sup>Fudan University, <sup>2 </sup>University of Surrey </h5>
+                        <br>
+                        <p>
+                            <a class="btn btn-secondary btn-lg" href="https://arxiv.org/abs/2406.01579" role="button">Paper</a>
+                            <a class="btn btn-secondary btn-lg" href="https://github.com/fudan-zvg/tet-splatting" role="button">Code</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <br>
+    <br>
+
+    <section>
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+
+                    <h2>Abstract</h2>
+                    <hr style="margin-top:0px">
+
+                    <div class="container">
+                        <img class="img-fluid" src="img/teaser.png" alt="">
+                    </div>
+                    <br>
+
+                    <p class="text-justify">
+                        3D representation is essential to the significant advance of 3D generation with 2D diffusion priors. As a flexible representation, NeRF has been first adopted for 3D representation. With density-based volumetric rendering, it however suffers both intensive computational overhead and inaccurate mesh extraction. Using a signed distance field and Marching Tetrahedra, DMTet allows for precise mesh extraction and real-time rendering but is limited in handling large topological changes in meshes, leading to optimization challenges. Alternatively, 3D Gaussian Splatting (3DGS) is favored in both training and rendering efficiency while falling short in mesh extraction. In this work, we introduce a novel 3D representation, Tetrahedron Splatting (TeT-Splatting), that supports easy convergence during optimization, precise mesh extraction, and real-time rendering simultaneously. This is achieved by integrating surface-based volumetric rendering within a structured tetrahedral grid while preserving the desired ability of precise mesh extraction, and a tile-based differentiable tetrahedron rasterizer. Furthermore, we incorporate eikonal and normal consistency regularization terms for the signed distance field to improve generation quality and stability. Critically, our representation can be trained without mesh extraction, making the optimization process easier to converge. Our TeT-Splatting can be readily integrated in existing 3D generation pipelines, along with polygonal mesh for texture optimization. Extensive experiments show that our TeT-Splatting strikes a superior tradeoff among convergence speed, render efficiency, and mesh quality as compared to previous alternatives under varying 3D generation settings.
+                    </p>
+
+                </div>
+            </div>
+        </div>
+
+    </section>
+    <br>
+    <br>
+
+    <section>
+        <div class="container">
+
+            <div class="row" style="margin-top:5px">
+                <div class="col-12 text-center">
+                    <h2>Pipeline</h2>
+                    <hr style="margin-top:0px">
+                </div>
+            </div>
+            <img class="img-fluid" src="img/pipeline.png" alt="">
+            <br>
+            <br>
+        </div>
+    </section>
+    <br>
+    <br>
+    
+    <section>
+        <div class="container">
+
+            <div class="row" style="margin-top:5px">
+                <div class="col-12 text-center">
+                    <h2>Gallery Results</h2>
+                    <hr style="margin-top:0px">
+                </div>
+            </div>
+        </div>
+        <div class="container" style="max-width: 768px;">
+            <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/an_amigurumi_bulldozer.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"an amigurumi bulldozer"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/an_astronaut_standing_on_the_surface_of_mars.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"an astronaut standing on the surface of mars"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/an_erupting_volcano.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"an erupting volcano"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/an_old_car_overgrown_by_vines_and_weeds.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"an old car overgrown by vines and weeds"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/an_opulent_couch_from_the_palace_of_Versailles.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"an opulent couch from the palace of Versailles"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/an_origami_crane.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"an origami crane"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/an_origami_motorcycle.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"an origami motorcycle"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/an_ornate_silver_gravy_boat_sitting_on_a_patterned_tablecloth.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"an ornate silver gravy boat sitting on a patterned tablecloth"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/an_unstable_rock_cairn_in_the_middle_of_a_stream.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"an unstable rock cairn in the middle of a stream"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_3d_model_of_an_adorable_cottage_with_a_thatched_roof.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a 3d model of an adorable cottage with a thatched roof"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_baby_bunny_sitting_on_top_of_a_stack_of_pancakes.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a baby bunny sitting on top of a stack of pancakes"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_bald_eagle_carved_out_of_wood.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a bald eagle carved out of wood"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_bear_dancing_ballet.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a bear dancing ballet"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_bear_dressed_in_medieval_armor.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a bear dressed in medieval armor"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_beautifully_carved_wooden_knight_chess_piece.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a beautifully carved wooden knight chess piece"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_beautiful_dress_made_out_of_garbage_bags.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a beautiful dress made out of garbage bags"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_blue_tulip.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a blue tulip"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_brightly_colored_mushroom_growing_on_a_log.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a brightly colored mushroom growing on a log"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_cake_covered_in_colorful_frosting_with_a_slice_being_taken_out.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a cake covered in colorful frosting with a slice being taken out"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_cake_in_the_shape_of_a_train.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a cake in the shape of a train"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_candelabra_with_many_candles_on_a_red_velvet_tablecloth.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a candelabra with many candles on a red velvet tablecloth"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_capybara_wearing_a_top_hat.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a capybara wearing a top hat"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_car_made_out_of_cheese.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a car made out of cheese"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_cauldron_full_of_gold_coins.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a cauldron full of gold coins"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_ceramic_lion.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a ceramic lion"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_chimpanzee_looking_through_a_telescope.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a chimpanzee looking through a telescope"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_completely_destroyed_car.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a completely destroyed car"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_crocodile_playing_a_drum_set.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a crocodile playing a drum set"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_delicious_croissant.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a delicious croissant"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_delicious_hamburger.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a delicious hamburger"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/A_DMC_Delorean_car.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"A DMC Delorean car"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_DSLR_photo_of_Mont_Saint-Michel.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a DSLR photo of Mont Saint-Michel"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_ficus_planted_in_a_pot.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a ficus planted in a pot"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_fresh_cinnamon_roll_covered_in_glaze.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a fresh cinnamon roll covered in glaze"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_giant_worm_emerging_from_the_sand_in_the_middle_of_the_desert.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a giant worm emerging from the sand in the middle of the desert"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_hotdog_in_a_tutu_skirt.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a hotdog in a tutu skirt"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_llama_wearing_a_suit.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a llama wearing a suit"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_model_of_the_eiffel_tower_made_out_of_toothpicks.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a model of the eiffel tower made out of toothpicks"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_mug_of_hot_chocolate_with_whipped_cream_and_marshmallows.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a mug of hot chocolate with whipped cream and marshmallows"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_pair_of_tan_cowboy_boots.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a pair of tan cowboy boots"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_palm_tree,_low_poly_3d_model.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a palm tree, low poly 3d model"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_panda_wearing_a_necktie_and_sitting_in_an_office_chair.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a panda wearing a necktie and sitting in an office chair"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_pigeon_reading_a_book.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a pigeon reading a book"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_plate_of_fried_chicken_and_waffles_with_maple_syrup_on_them.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a plate of fried chicken and waffles with maple syrup on them"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_plate_piled_high_with_chocolate_chip_cookies.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a plate piled high with chocolate chip cookies"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_plush_t-rex_dinosaur_toy.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a plush t-rex dinosaur toy"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_recliner_chair.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a recliner chair"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_red_cardinal_bird_singing.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a red cardinal bird singing"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_red_rotary_telephone.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a red rotary telephone"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_roast_turkey_on_a_platter.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a roast turkey on a platter"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_roulette_wheel.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a roulette wheel"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_sliced_loaf_of_fresh_bread.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a sliced loaf of fresh bread"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_squirrel_dressed_like_Henry_VIII_king_of_England.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a squirrel dressed like Henry VIII king of England"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_squirrel_dressed_up_like_a_Victorian_woman.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a squirrel dressed up like a Victorian woman"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_stack_of_pancakes_covered_in_maple_syrup.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a stack of pancakes covered in maple syrup"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_steaming_basket_full_of_dumplings.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a steaming basket full of dumplings"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_steaming_hot_plate_piled_high_with_spaghetti_and_meatballs.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a steaming hot plate piled high with spaghetti and meatballs"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_straw_basket_with_a_cobra_coming_out_of_it.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a straw basket with a cobra coming out of it"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_tiger_dressed_as_a_doctor.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a tiger dressed as a doctor"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_tiger_karate_master.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a tiger karate master"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_tiger_wearing_sunglasses_and_a_leather_jacket,_riding_a_motorcycle.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a tiger wearing sunglasses and a leather jacket, riding a motorcycle"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_toilet_made_out_of_gold.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a toilet made out of gold"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_train_engine_made_out_of_clay.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a train engine made out of clay"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_tray_of_Sushi.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a tray of Sushi"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_typewriter.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a typewriter"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/a_very_cool_and_trendy_pair_of_sneakers.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"a very cool and trendy pair of sneakers"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/banana.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"banana"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/Coffee_cup_with_many_holes.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"Coffee cup with many holes"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/miniature_schnauzer_wooden_sculpture.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"miniature schnauzer wooden sculpture"</h6>
+                </div>
+            </div>
+    <div class="row captioned_videos">
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/the_Imperial_State_Crown_of_England.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"the Imperial State Crown of England"</h6>
+                </div>
+
+                <div class="col-4">
+                    <video width="100%" class="video lazy" loop playsinline autoplay muted>
+                        <source src="./img/videos/Wedding_dress_made_of_tentacles.mp4" type="video/mp4">
+                    </video>
+                    <h6 class="caption">"Wedding dress made of tentacles"</h6>
+                </div>
+            </div>
+        </div>
+        
+    </section>
+
+    <footer class="text-center">
+        <div class="container">
+            <div class="row ">
+                <div class="col-12">
+                    <h2>BibTeX</h2>
+                    <hr style="margin-top:0px">
+                    <div class="bibtexsection">
+                        <code style="color: black;">
+        @article{gu2024tetrahedron,
+            title={Tetrahedron Splatting for 3D Generation},
+            author={Gu, Chun and Yang, Zeyu and Pan, Zijie and Zhu, Xiatian and Zhang, Li},
+            journal={2406.01579},
+            year={2024},
+        }
+                        </code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <br>
+    <br>
+
+
+    <div class="row">
+        <div class="col-12 text-center">
+            <p>
+                Acknowledgements: The website template was borrowed from <a href="https://lioryariv.github.io/idr/">Lior Yariv</a>.
+            </p>
+        </div>
+    </div>
+    <br>
+    <br>
+
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap-4.4.1.js"></script>
+</body>
+</html>
