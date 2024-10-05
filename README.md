@@ -62,10 +62,10 @@ This work is built on many amazing research works:
 
 ## 📜 BibTeX
 ```bibtex
-@article{gu2024tetrahedron,
+@inproceedings{gu2024tetrahedron,
   title={Tetrahedron Splatting for 3D Generation},
   author={Gu, Chun and Yang, Zeyu and Pan, Zijie and Zhu, Xiatian and Zhang, Li},
-  journal={2406.01579},
-  year={2024},
+  booktitle={NeurIPS},
+  year={2024}
 }
 ```
