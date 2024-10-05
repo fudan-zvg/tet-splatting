@@ -1,0 +1,25 @@
+pytorch-lightning==2.0.4
+open3d==0.15.2
+opencv-python==4.5.5.64
+opencv-python-headless==4.7.0.72
+numpy==1.26.4
+omegaconf==2.3.0
+jaxtyping==0.2.19
+libigl==2.4.1
+einops==0.3.0
+diffusers==0.18.2
+transformers==4.28.1
+nerfacc
+pymeshlab==2022.2.post2
+trimesh==3.20.2
+wandb==0.13.11
+tensorboard==2.9.0
+tensorboardX==2.6
+accelerate==0.23.0
+kornia==0.6.0
+open_clip_torch
+taming-transformers-rom1504==0.0.6
+tinycudann @ git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch
+envlight @ git+https://github.com/ashawkey/envlight.git@ef492c03711c87287549a0283ee51199f45cbea4
+nvdiffrast @ git+https://github.com/NVlabs/nvdiffrast.git@c5caf7bdb8a2448acc491a9faa47753972edd380
+clip @ git+https://github.com/openai/CLIP.git@a9b1bf5920416aaeaec965c25dd9e8f98c864f16

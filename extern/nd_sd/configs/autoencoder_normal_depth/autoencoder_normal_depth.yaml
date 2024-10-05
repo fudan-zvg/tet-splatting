@@ -1,0 +1,69 @@
+model:
+  base_learning_rate: 5.e-5
+  target: ldm.models.autoencoder.AutoencoderKL
+  params:
+    monitor: "val/rec_loss"
+    embed_dim: 4
+    lossconfig:
+      target: ldm.modules.losses.LPIPSWithDepthDiscriminator
+      # target: ldm.modules.losses.MidasWithDiscriminator
+      params:
+        disc_start: 10000  # pretrain Gan generator
+        kl_weight: 0.000001
+        disc_weight: 0.5
+        disc_in_channels: 4
+
+    ddconfig:
+      double_z: True
+      z_channels: 4
+      resolution: 256
+      in_channels: 4
+      out_ch: 4
+      ch: 128
+      ch_mult: [ 1,2,4,4 ]  # num_down = len(ch_mult)-1
+      num_res_blocks: 2
+      attn_resolutions: [ ]
+      dropout: 0.0
+    ckpt_path: '/mnt/cap/lingtengqiu/nd-diffusion/nd-diffusion-weights/nd-vae-imgnet.ckpt'  #pretrained vae-weights on imgnet
+    using_rgb: False # normal+depth
+    prior_model:
+        #target: libs.omnidata_torch.lib.midas.MidasBatchDetector
+        target: libs.omnidata_torch.lib.midas_31.MidasBatchDetector  # update to midas-3_1
+    prior_normal:
+        target: libs.ControlNet-v1-1-nightly.annotator.normalbae.NormalBaeBatchDetector
+data:
+  target: ldm.data.web_datasets.DataModuleFromConfig
+  params:
+    batch_size: 16
+    wrap: True
+    aest: 5.
+    punsafety: .8
+
+    train:
+      params:
+          curls: '../improved_aesthetics_5plus/laion-2ben-5_1/{00000..20824}.tar' # laion-2b-en-datasets
+          size: 256
+          min_crop_f: .8
+
+
+lightning:
+  callbacks:
+    image_logger:
+      target: "ldm.logger.image_logger.ImageDepthOnlyLogger"
+      params:
+        epoch_frequency: 1
+        batch_frequency: 10000 # save_gallery
+        max_images: 8
+        increase_log_steps: True
+        log_first_step: True
+
+    global_callback:
+      params:
+        save_steps: 10000
+        save_start: True
+
+
+  trainer:
+    benchmark: True
+    accumulate_grad_batches: 8
+    num_sanity_val_steps: 0

@@ -1,0 +1,165 @@
+# normal depth model
+# finetune from objaverse for albedo
+model:
+  base_learning_rate: 1.0e-04
+  target: ldm.models.diffusion.mvvideo_ddpm.LatentDiffusion
+  params:
+    linear_start: 0.00085
+    linear_end: 0.0120
+    num_timesteps_cond: 1
+    log_every_t: 200
+    timesteps: 1000
+    first_stage_key: "albedo"
+    cond_stage_key: "caption"
+    image_size: 32
+    channels: 4
+    cond_stage_trainable: false   # Note: different from the one we trained before
+    conditioning_key: hybrid
+    monitor: val/loss_simple_ema
+    scale_factor: 0.18215
+    use_ema: True
+    ema_copy: True
+    num_frames: 4
+    first_stage_ckpts: null # normal +depth vae model
+    ckpt_path: '/path/to/sd-v2-1.ckpt'
+    ignore_keys: []
+    input_keys: ['albedo']
+    cond_method: 'cat_d'
+
+    scheduler_config: # 10000 warmup steps
+      target: ldm.lr_scheduler.LambdaLinearScheduler
+      params:
+        warm_up_steps: [ 100 ]
+        cycle_lengths: [ 10000000000000 ] # incredibly large number to prevent corner cases
+        f_start: [ 1.e-6 ]
+        f_max: [ 1. ]
+        f_min: [ 1. ]
+
+    unet_config:
+      target: ldm.modules.diffusionmodules.openaimodel_v2_1.MultiViewUNetModel
+      params:
+        use_fp16: False
+        image_size: 32 # unused
+        in_channels: 5
+        out_channels: 4
+        model_channels: 320
+        attention_resolutions: [ 4, 2, 1 ]
+        num_res_blocks: 2
+        channel_mult: [ 1, 2, 4, 4 ]
+        num_head_channels: 64 # need to fix for flash-attn
+        use_spatial_transformer: True
+        use_linear_in_transformer: True
+        transformer_depth: 1
+        context_dim: 1024
+        use_checkpoint: True
+        legacy: False
+        camera_dim: 16
+
+    first_stage_config:
+      target: ldm.models.autoencoder.AutoencoderKL
+      params:
+        embed_dim: 4
+        monitor: val/rec_loss
+        ddconfig:
+          double_z: true
+          z_channels: 4
+          resolution: 256
+          in_channels: 3
+          out_ch: 3
+          ch: 128
+          ch_mult:
+          - 1
+          - 2
+          - 4
+          - 4
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
+        lossconfig:
+          target: torch.nn.Identity
+
+
+    cond_stage_config:
+      target: ldm.modules.encoders.modules.FrozenOpenCLIPEmbedder
+      params:
+        freeze: True
+        layer: "penultimate"
+
+
+data:
+  target: ldm.data.objaverse_camera.DataModuleFromConfig
+  params:
+    batch_size: 18
+    wrap: False
+    train:
+      target: ldm.data.objaverse_camera.Objaverse_Dataset
+      params:
+          json_path: '/mnt_data/dataset/raw/0/valid_paths_v4_cap_filter_thres_28.json'
+          caption_path: '/mnt_data/dataset/raw/0/text_captions_cap3d.json'
+          data_root: '/mnt_data/dataset/raw/0'
+          size: 256
+          degradation: 'cv_bilinear'
+          validation: False
+          views: 24
+          debug: False
+          random_crop: False
+          pre_str: 'the albedo of '
+          albedo_check: True
+          suff_str: ", 3d asset"
+
+
+    validation:
+      target: ldm.data.objaverse_camera.Objaverse_Dataset
+      params:
+          json_path: '/mnt_data/dataset/raw/0/valid_paths_v4_cap_filter_thres_28.json'
+          caption_path: '/mnt_data/dataset/raw/0/text_captions_cap3d.json'
+          data_root: '/mnt_data/dataset/raw/0'
+          size: 256
+          degradation: 'cv_bilinear'
+          validation: True
+          views: 24
+          debug: False
+          random_crop: False
+          pre_str: 'the albedo of '
+          albedo_check: True
+          suff_str: ", 3d asset"
+
+    test:
+      target: ldm.data.objaverse_camera.Objaverse_Dataset
+      params:
+          json_path: '/mnt_data/dataset/raw/0/valid_paths_v4_cap_filter_thres_28.json'
+          caption_path: '/mnt_data/dataset/raw/0/text_captions_cap3d.json'
+          data_root: '/mnt_data/dataset/raw/0'
+          size: 256
+          degradation: 'cv_bilinear'
+          validation: True
+          views: 24
+          debug: False
+          random_crop: False
+          pre_str: 'the albedo of '
+          albedo_check: True
+          suff_str: ", 3d asset"
+
+lightning:
+  callbacks:
+    image_logger:
+      target: "ldm.logger.rgb_logger.ImageLogger"
+      params:
+        free_scale: 10
+        solver: 'ddim'   #  test solver
+        epoch_frequency: 10
+        batch_frequency: 200
+        max_images: 32
+        increase_log_steps: True
+        log_images_kwargs: {'ddim_steps': 50, 'use_ddim': True, sampler_kwargs:{'unconditional_guidance_scale': 10, 'type':'ddim'}}
+        log_first_step: True
+    global_callback:
+      params:
+        save_steps: 2000 # 2k steps
+        save_start: False
+
+
+  trainer:
+    benchmark: True
+    accumulate_grad_batches: 8
+    num_sanity_val_steps: 0

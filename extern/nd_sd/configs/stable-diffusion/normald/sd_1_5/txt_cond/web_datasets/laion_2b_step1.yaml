@@ -1,0 +1,116 @@
+# resume model from rbg-demo
+model:
+  base_learning_rate: 1.0e-05
+  target: ldm.models.diffusion.ddpm.LatentDiffusion
+  params:
+    linear_start: 0.00085
+    linear_end: 0.0120
+    num_timesteps_cond: 1
+    log_every_t: 200
+    timesteps: 1000
+    first_stage_key: "image"
+    cond_stage_key: "caption"
+    image_size: 64
+    channels: 4
+    cond_stage_trainable: false   # Note: different from the one we trained before
+    conditioning_key: crossattn
+    monitor: val/loss_simple_ema
+    scale_factor: 0.18215
+    use_ema: True
+    first_stage_ckpts: '/mnt/cap/lingtengqiu/nd-diffusion/nd-diffusion-weights/nd-vae-laion.ckpt'  # normal +depth vae model
+    ckpt_path: '/mnt/cap/lingtengqiu/nd-diffusion/nd-diffusion-weights/sd-v1-5.ckpt'  # vae initial weights
+    ignore_keys: ['first_stage_model.encoder.conv_in.weight', 'first_stage_model.decoder.conv_out.weight', 'first_stage_model.decoder.conv_out.bias']
+    input_keys: ['normal', 'depth']
+
+    prior_model:
+        # target: libs.omnidata_torch.lib.midas.MidasBatchDetector  # switch to Midas-2-1
+        target: libs.omnidata_torch.lib.midas_31.MidasBatchDetectorW  # update to midas-3_1
+    prior_normal:
+        target: libs.ControlNet-v1-1-nightly.annotator.normalbae.NormalBaeBatchDetector
+
+    scheduler_config:
+      target: ldm.lr_scheduler.LambdaLinearScheduler
+      params:
+        warm_up_steps: [ 0 ]
+        cycle_lengths: [ 10000000000000 ]  # incredibly large number to prevent corner cases
+        f_start: [ 1.e-6 ]
+        f_max: [ 1. ]
+        f_min: [ 1. ]
+
+    unet_config:
+      target: ldm.modules.diffusionmodules.openaimodel.UNetModel
+      params:
+        use_fp16: False
+        image_size: 64 # unused
+        in_channels: 4
+        out_channels: 4
+        model_channels: 320
+        attention_resolutions: [ 4, 2, 1 ]
+        num_res_blocks: 2
+        channel_mult: [ 1, 2, 4, 4 ]
+        num_heads: 8
+        use_spatial_transformer: True
+        transformer_depth: 1
+        context_dim: 768
+        use_checkpoint: True
+        legacy: False
+
+    first_stage_config:
+      target: ldm.models.autoencoder.AutoencoderKL
+      params:
+        embed_dim: 4
+        monitor: val/rec_loss
+        ddconfig:
+          double_z: true
+          z_channels: 4
+          resolution: 256
+          in_channels: 4
+          out_ch: 4
+          ch: 128
+          ch_mult:
+          - 1
+          - 2
+          - 4
+          - 4
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
+        lossconfig:
+          target: torch.nn.Identity
+    cond_stage_config:
+      target: ldm.modules.encoders.modules.FrozenCLIPEmbedder
+
+data:
+  target: ldm.data.web_datasets.DataModuleFromConfig
+  params:
+    batch_size: 8
+    wrap: True
+    train:
+      params:
+          curls: '../improved_aesthetics_5plus/laion-2ben-5_0/{00000..20823}.tar'  # Laion Dataset path
+          size: 512
+          min_crop_f: 1.
+
+
+lightning:
+  callbacks:
+    image_logger:
+      target: "ldm.logger.image_logger.ImageDepthOnlyDDIMLogger"
+      params:
+        free_scale: 3.0
+        solver: 'dpmsolver'  # sampling sovler
+        epoch_frequency: 1
+        batch_frequency: 10000
+        max_images: 8
+        increase_log_steps: True
+        log_images_kwargs: {'ddim_steps': 50, 'use_ddim': True, sampler_kwargs:{'unconditional_guidance_scale': 3.0, 'type':'dpmsolver'}}
+        log_first_step: True
+    global_callback:
+      params:
+        save_steps: 32000  # save_step // accumulate_grad_batches = 2k steps
+        save_start: False
+
+  trainer:
+    benchmark: True
+    accumulate_grad_batches: 16
+    num_sanity_val_steps: 0
